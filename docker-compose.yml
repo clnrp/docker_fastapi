@@ -1,0 +1,40 @@
+version: "2.4"
+
+services:
+
+  postgresql:
+    build:
+      context: ./
+      dockerfile: ./postgresql/Dockerfile
+    container_name: postgresql
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgresql/data:/var/lib/postgresql/data
+      - ./postgresql/script.sql:/docker-entrypoint-initdb.d/script.sql
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+    restart: always
+
+  redis:
+    image: redis:6.2.5
+    container_name: redis
+    ports:
+      - "6379:6379"
+
+  fastapi:
+    build:
+      context: ./
+      dockerfile: ./fastapi/Dockerfile
+    container_name: fastapi
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./fastapi/app:/app
+    links:
+      - postgresql
+      - redis
+    environment:
+      - PYTHONUNBUFFERED=1
+
